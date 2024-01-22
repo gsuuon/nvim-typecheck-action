@@ -180,6 +180,12 @@ local function typecheck(opts)
   return 0, diagnostics
 end
 
+local severity_to_github_annotation = {
+  "notice",
+  "warning",
+  "error",
+}
+
 local function print_diagnostics(diagnostics)
   local curdir = vim.fn.getcwd()
   local count = 0
@@ -198,6 +204,19 @@ local function print_diagnostics(diagnostics)
     for _, diagnostic in ipairs(file_diagnostics) do
       local severity = severity_to_string[diagnostic.severity]
       local msg = vim.split(diagnostic.message, "\n", { plain = true, trimempty = true })[1]
+
+      local annotation = string.format(
+        "::%s file=%s,line=%d,endLine=%d,title=%s::%s",
+        severity_to_github_annotation[diagnostic.severity],
+        filename,
+        diagnostic.range.start.line + 1,
+        diagnostic.range["end"].line + 1,
+        diagnostic.code,
+        diagnostic.message
+      )
+
+      vim.api.nvim_out_write(annotation .. "\n")
+
       local line = string.format(
         "%s:%d:%d:%d:%d: %s %s [%s]",
         filename,
@@ -209,6 +228,7 @@ local function print_diagnostics(diagnostics)
         msg,
         diagnostic.code
       )
+
       vim.api.nvim_out_write(line .. "\n")
       count = count + 1
     end
