@@ -412,6 +412,11 @@ local code, diagnostics = typecheck(opts)
 if code ~= 0 then
   os.exit(code)
 end
+
 print_diagnostics(diagnostics, opts.annotate)
-code = vim.tbl_isempty(diagnostics) and 0 or 2
-os.exit(code)
+
+local has_errors = vim.tbl_contains(vim.tbl_keys(diagnostics), function(uri)
+  return diagnostics[uri].severity == 1
+end, { predicate = true })
+
+os.exit(has_errors and 2 or 0)
