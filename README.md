@@ -114,3 +114,13 @@ Which version of lua-language-server to use to run the check.
   with:
     luals-version: 3.6.25
 ```
+
+### `annotate`
+
+Set github annotations from diagnostics
+
+```yaml
+- uses: stevearc/nvim-typecheck-action@v1
+  with:
+    annotate: false
+```

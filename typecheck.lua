@@ -256,7 +256,7 @@ local function print_diagnostics(diagnostics, annotate)
 
   for severity,count in ipairs(counts) do
     issues = issues + count
-    summary = summary .. string.format("| %s | %d |", severity_to_string[severity], count)
+    summary = summary .. string.format("| %s | %d |\n", severity_to_string[severity], count)
   end
 
   if issues == 0 then
