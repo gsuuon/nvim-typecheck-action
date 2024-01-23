@@ -27,6 +27,9 @@ inputs:
   luals-version:
     description: Version of LuaLS to use for running the test (e.g. 3.6.25)
     required: false
+  annotate:
+    description: Set github annotations from diagnostics
+    required: false
 runs:
   using: "composite"
   steps:
@@ -41,5 +44,6 @@ runs:
         INPUT_NEODEV_REV: ${{ inputs.neodev-rev }}
         INPUT_CONFIGPATH: ${{ inputs.configpath }}
         INPUT_LIBRARIES: ${{ inputs.libraries }}
+        INPUT_ANNOTATE: ${{ inputs.annotate }}
       run: ${{ github.action_path }}/typecheck.sh --neodev ${{ inputs.neodev-version }} --level ${{ inputs.level }} ${{ inputs.path }} --bin ~/.local/share/language-servers/lua-language-server/bin/lua-language-server
       shell: bash

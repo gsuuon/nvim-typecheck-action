@@ -188,7 +188,7 @@ local function typecheck(opts)
   return 0, diagnostics
 end
 
-local function print_diagnostics(diagnostics)
+local function print_diagnostics(diagnostics, annotate)
   local curdir = vim.fn.getcwd()
   local count = 0
   local uris = vim.tbl_keys(diagnostics)
@@ -219,17 +219,19 @@ local function print_diagnostics(diagnostics)
       )
       vim.api.nvim_out_write(line .. "\n")
 
-      local annotation = string.format(
-        "::%s file=%s,line=%d,endLine=%d,title=%s::%s",
-        severity_to_github_annotation[diagnostic.severity],
-        filename,
-        diagnostic.range.start.line + 1,
-        diagnostic.range["end"].line + 1,
-        diagnostic.code,
-        diagnostic.message
-      )
+      if annotate then
+        local annotation = string.format(
+          "::%s file=%s,line=%d,endLine=%d,title=%s::%s",
+          severity_to_github_annotation[diagnostic.severity],
+          filename,
+          diagnostic.range.start.line + 1,
+          diagnostic.range["end"].line + 1,
+          diagnostic.code,
+          diagnostic.message
+        )
 
-      vim.api.nvim_out_write(annotation .. "\n")
+        vim.api.nvim_out_write(annotation .. "\n")
+      end
 
       count = count + 1
     end
@@ -251,6 +253,7 @@ end
 ---@field neodev_version? "nightly"|"stable"|"none"
 ---@field neodev_rev? string
 ---@field workdir string
+---@field annotate? boolean
 
 ---@param path string
 ---@return string
@@ -311,6 +314,7 @@ local function print_help()
     "  --neodev VERSION       Version of neodev types (nightly, stable, or none)",
     "  --neodev-rev REV       The git rev of neodev to check out",
     "  --workdir DIR          Path to directory to store libraries and temp files",
+    "  --annotate             Set github annotations from diagnostics",
     "",
   }, "\n")
   print(help)
@@ -357,6 +361,8 @@ local function parse_args(cli_args)
       if vim.endswith(opts.workdir, "/") then
         opts.workdir = opts.workdir:sub(1, -2)
       end
+    elseif str == "--annotate" then
+      opts.annotate = true
     else
       if opts.path then
         print("Error: can only specify one path to check")
@@ -381,6 +387,6 @@ local code, diagnostics = typecheck(opts)
 if code ~= 0 then
   os.exit(code)
 end
-print_diagnostics(diagnostics)
+print_diagnostics(diagnostics, opts.annotate)
 code = vim.tbl_isempty(diagnostics) and 0 or 2
 os.exit(code)

@@ -14,5 +14,8 @@ if [ -n "$INPUT_LIBRARIES" ]; then
     EXTRA_ARGS="$EXTRA_ARGS --lib $lib"
   done
 fi
+if [ "$INPUT_ANNOTATE" == "true" ]; then
+  EXTRA_ARGS="$EXTRA_ARGS --annotate"
+fi
 
 exec nvim --headless -u /dev/null --noplugin -l "$HERE/typecheck.lua" "$@" $EXTRA_ARGS
