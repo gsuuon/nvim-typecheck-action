@@ -202,6 +202,7 @@ local function print_diagnostics(diagnostics, annotate)
     0,
     0
   }
+  local shown_diagnostics = {}
   local uris = vim.tbl_keys(diagnostics)
   table.sort(uris)
   for _, uri in ipairs(uris) do
@@ -243,6 +244,7 @@ local function print_diagnostics(diagnostics, annotate)
 
         vim.api.nvim_out_write(annotation .. "\n")
       end
+      table.insert(shown_diagnostics, diagnostic)
       counts[diagnostic.severity] = counts[diagnostic.severity] + 1
     end
   end
@@ -266,6 +268,8 @@ local function print_diagnostics(diagnostics, annotate)
   end
 
   write_file('./summary.md', summary)
+
+  return shown_diagnostics
 end
 
 ---@class Options
@@ -413,10 +417,10 @@ if code ~= 0 then
   os.exit(code)
 end
 
-print_diagnostics(diagnostics, opts.annotate)
+local shown_diagnostics = print_diagnostics(diagnostics, opts.annotate)
 
-local has_errors = vim.tbl_contains(vim.tbl_keys(diagnostics), function(uri)
-  return diagnostics[uri].severity == 1
+local has_errors = vim.tbl_contains(shown_diagnostics, function(diagnostic)
+  return diagnostic.severity == 1
 end, { predicate = true })
 
 os.exit(has_errors and 2 or 0)
