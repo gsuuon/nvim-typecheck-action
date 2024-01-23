@@ -10,11 +10,17 @@ local function read_json_file(path)
 end
 
 ---@param path string
+---@param content string
+local function write_file(path, content)
+  local fd = assert(vim.loop.fs_open(path, "w", 420))
+  vim.loop.fs_write(fd, content)
+  vim.loop.fs_close(fd)
+end
+
+---@param path string
 ---@param data any
 local function write_json_file(path, data)
-  local fd = assert(vim.loop.fs_open(path, "w", 420)) -- 0644
-  vim.loop.fs_write(fd, vim.json.encode(data))
-  vim.loop.fs_close(fd)
+  write_file(path, vim.json.encode(data))
 end
 
 ---@param cmd string[]
@@ -190,7 +196,12 @@ end
 
 local function print_diagnostics(diagnostics, annotate)
   local curdir = vim.fn.getcwd()
-  local count = 0
+  local counts = {
+    0,
+    0,
+    0,
+    0
+  }
   local uris = vim.tbl_keys(diagnostics)
   table.sort(uris)
   for _, uri in ipairs(uris) do
@@ -232,15 +243,29 @@ local function print_diagnostics(diagnostics, annotate)
 
         vim.api.nvim_out_write(annotation .. "\n")
       end
-
-      count = count + 1
+      counts[diagnostic.severity] = counts[diagnostic.severity] + 1
     end
   end
-  if count == 0 then
+
+  local issues = 0
+  local summary = [[
+# Diagnostics
+| Severity | Count |
+| --- | --- |
+]]
+
+  for severity,count in ipairs(counts) do
+    issues = issues + count
+    summary = summary .. string.format("| %s | %d |", severity_to_string[severity], count)
+  end
+
+  if issues == 0 then
     print("No issues found!")
   else
-    print(string.format("Found %d issues", count))
+    print(string.format("Found %d issues", issues))
   end
+
+  write_file('./summary.md', summary)
 end
 
 ---@class Options

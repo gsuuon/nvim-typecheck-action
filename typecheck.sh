@@ -18,4 +18,15 @@ if [ "$INPUT_ANNOTATE" == "true" ]; then
   EXTRA_ARGS="$EXTRA_ARGS --annotate"
 fi
 
-exec nvim --headless -u /dev/null --noplugin -l "$HERE/typecheck.lua" "$@" $EXTRA_ARGS
+set +e
+nvim --headless -u /dev/null --noplugin -l "$HERE/typecheck.lua" "$@" $EXTRA_ARGS
+
+NVIM_EXIT=$?
+
+if test -f ./summary.md; then
+  cat ./summary.md > $GITHUB_STEP_SUMMARY
+else
+  echo 'No summary found'
+fi
+
+exit "$NVIM_EXIT"
