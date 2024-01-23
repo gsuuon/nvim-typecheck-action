@@ -138,6 +138,13 @@ local severity_to_string = {
   "HINT"
 }
 
+local severity_to_github_annotation = {
+  "error",
+  "warning",
+  "notice",
+  "notice"
+}
+
 ---@param opts Options
 ---@return integer Exit code
 ---@return table?
@@ -211,6 +218,19 @@ local function print_diagnostics(diagnostics)
         diagnostic.code
       )
       vim.api.nvim_out_write(line .. "\n")
+
+      local annotation = string.format(
+        "::%s file=%s,line=%d,endLine=%d,title=%s::%s",
+        severity_to_github_annotation[diagnostic.severity],
+        filename,
+        diagnostic.range.start.line + 1,
+        diagnostic.range["end"].line + 1,
+        diagnostic.code,
+        diagnostic.message
+      )
+
+      vim.api.nvim_out_write(annotation .. "\n")
+
       count = count + 1
     end
   end
